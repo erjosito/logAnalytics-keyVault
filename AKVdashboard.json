@@ -1,0 +1,389 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": { 
+        "dashboardName": {
+            "type": "string",
+            "defaultValue":  "Azure Key Vault",
+            "metadata": {
+                "description": "Display Name of the Dashboard"
+            }
+        },
+        "logAnalyticsWorkspaceName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of an existing Log Analytics Workspace"
+            }
+        },
+        "logAnalyticsWorkspaceResourceGroup": {
+          "type": "string",
+          "metadata": {
+              "description": "Name of existing Log Analytics Workspace Resource Group"
+          }
+        }
+    },
+    "variables": {
+      "dashboardID": "[concat(uniquestring(resourceGroup().id), uniquestring(parameters('dashboardName')))]"
+    },
+    "resources": [
+        {
+            "name":  "[variables('dashboardID')]",
+            "type": "Microsoft.Portal/dashboards",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2015-08-01-preview",
+            "tags": {
+                "hidden-title": "[parameters('dashboardName')]"
+            },
+            "properties": {
+              "lenses": {
+                "0": {
+                  "order": 0,
+                  "parts": {
+                    "0": {
+                      "position": {
+                        "x": 0,
+                        "y": 0,
+                        "rowSpan": 4,
+                        "colSpan": 6
+                      },
+                      "metadata": {
+                        "inputs": [
+                          {
+                            "name": "ComponentId",
+                            "value": {
+                              "SubscriptionId": "[subscription().subscriptionId]",
+                              "ResourceGroup": "[parameters('logAnalyticsWorkspaceResourceGroup')]",
+                              "Name": "[parameters('logAnalyticsWorkspaceName')]"
+                            }
+                          },
+                          {
+                            "name": "Query",
+                            "value": "AzureDiagnostics\r\n| where ResourceProvider == \"MICROSOFT.KEYVAULT\"\r\n| summarize count() by OperationName,bin(TimeGenerated, 1m)\r\n| render timechart\r\n"
+                          },
+                          {
+                            "name": "TimeRange",
+                            "value": "PT1H"
+                          },
+                          {
+                            "name": "Dimensions",
+                            "value": {
+                              "xAxis": {
+                                "name": "TimeGenerated",
+                                "type": "DateTime"
+                              },
+                              "yAxis": [
+                                {
+                                  "name": "count_",
+                                  "type": "Double"
+                                }
+                              ],
+                              "splitBy": [
+                                {
+                                  "name": "OperationName",
+                                  "type": "String"
+                                }
+                              ],
+                              "aggregation": "Sum"
+                            }
+                          },
+                          {
+                            "name": "Version",
+                            "value": "1.0"
+                          },
+                          {
+                            "name": "DashboardId",
+                            "value": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().Name,'/providers/Microsoft.Portal/dashboards/',variables('dashboardID'))]"
+                          },
+                          {
+                            "name": "PartId",
+                            "value": "[concat(uniquestring(variables('dashboardID')), 'Part2')]"
+                          },
+                          {
+                            "name": "PartTitle",
+                            "value": "Key Vault operations"
+                          },
+                          {
+                            "name": "PartSubTitle",
+                            "value": "Application Gateway"
+                          },
+                          {
+                            "name": "resourceTypeMode",
+                            "value": "workspace"
+                          }
+                        ],
+                        "type": "Extension/AppInsightsExtension/PartType/AnalyticsLineChartPart",
+                        "settings": {
+                          "content": {
+                            "dashboardPartTitle": "Key Vault Operations",
+                            "dashboardPartSubTitle": "Key Vault"
+                          }
+                        },
+                        "asset": {
+                          "idInputName": "ComponentId",
+                          "type": "ApplicationInsights"
+                        }
+                      }
+                    },
+                    "1": {
+                      "position": {
+                        "x": 6,
+                        "y": 0,
+                        "rowSpan": 4,
+                        "colSpan": 6
+                      },
+                      "metadata": {
+                        "inputs": [
+                          {
+                            "name": "ComponentId",
+                            "value": {
+                              "SubscriptionId": "[subscription().subscriptionId]",
+                              "ResourceGroup": "[parameters('logAnalyticsWorkspaceResourceGroup')]",
+                              "Name": "[parameters('logAnalyticsWorkspaceName')]"
+                            }
+                          },
+                          {
+                            "name": "Query",
+                            "value": "AzureDiagnostics\r\n| where ResourceProvider == \"MICROSOFT.KEYVAULT\" and OperationName == \"SecretGet\"\r\n| summarize count() by ResultSignature, bin(TimeGenerated, 1m)\r\n| render timechart\r\n"
+                          },
+                          {
+                            "name": "TimeRange",
+                            "value": "PT1H"
+                          },
+                          {
+                            "name": "Dimensions",
+                            "value": {
+                              "xAxis": {
+                                "name": "TimeGenerated",
+                                "type": "DateTime"
+                              },
+                              "yAxis": [
+                                {
+                                  "name": "count_",
+                                  "type": "Double"
+                                }
+                              ],
+                              "splitBy": [
+                                {
+                                  "name": "ResultSignature",
+                                  "type": "String"
+                                }
+                              ],
+                              "aggregation": "Sum"
+                            }
+                          },
+                          {
+                            "name": "Version",
+                            "value": "1.0"
+                          },
+                          {
+                            "name": "DashboardId",
+                            "value": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().Name,'/providers/Microsoft.Portal/dashboards/',variables('dashboardID'))]"
+                          },
+                          {
+                            "name": "PartId",
+                            "value": "[concat(uniquestring(variables('dashboardID')), 'Part3')]"
+                          },
+                          {
+                            "name": "PartTitle",
+                            "value": "operation result codes"
+                          },
+                          {
+                            "name": "PartSubTitle",
+                            "value": "Azure Key Vault"
+                          },
+                          {
+                            "name": "resourceTypeMode",
+                            "value": "workspace"
+                          }
+                        ],
+                        "type": "Extension/AppInsightsExtension/PartType/AnalyticsLineChartPart",
+                        "settings": {
+                          "content": {
+                            "dashboardPartTitle": "Operation Results",
+                            "dashboardPartSubTitle": "Azure Key Vault"
+                          }
+                        },
+                        "asset": {
+                          "idInputName": "ComponentId",
+                          "type": "ApplicationInsights"
+                        }
+                      }
+                    },
+                    "2": {
+                      "position": {
+                        "x": 0,
+                        "y": 4,
+                        "rowSpan": 4,
+                        "colSpan": 6
+                      },
+                      "metadata": {
+                        "inputs": [
+                          {
+                            "name": "ComponentId",
+                            "value": {
+                              "SubscriptionId": "[subscription().subscriptionId]",
+                              "ResourceGroup": "[parameters('logAnalyticsWorkspaceResourceGroup')]",
+                              "Name": "[parameters('logAnalyticsWorkspaceName')]"
+                            }
+                          },
+                          {
+                            "name": "Query",
+                            "value": "AzureMetrics\r\n| where ResourceProvider == \"MICROSOFT.KEYVAULT\" and MetricName == \"ServiceApiLatency\"\r\n| project Average,TimeGenerated\r\n| render timechart\n"
+                          },
+                          {
+                            "name": "TimeRange",
+                            "value": "PT1H"
+                          },
+                          {
+                            "name": "Dimensions",
+                            "value": {
+                              "xAxis": {
+                                "name": "TimeGenerated",
+                                "type": "DateTime"
+                              },
+                              "yAxis": [
+                                {
+                                  "name": "Average",
+                                  "type": "Int64"
+                                }
+                              ],
+                              "aggregation": "Average"
+                            }
+                          },
+                          {
+                            "name": "Version",
+                            "value": "1.0"
+                          },
+                          {
+                            "name": "DashboardId",
+                            "value": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().Name,'/providers/Microsoft.Portal/dashboards/',variables('dashboardID'))]"
+                          },
+                          {
+                            "name": "PartId",
+                            "value": "[concat(uniquestring(variables('dashboardID')), 'Part13')]"
+                          },
+                          {
+                            "name": "PartTitle",
+                            "value": "API Latency"
+                          },
+                          {
+                            "name": "PartSubTitle",
+                            "value": "Azure Key Vault"
+                          },
+                          {
+                            "name": "resourceTypeMode",
+                            "value": "workspace"
+                          }
+                        ],
+                        "type": "Extension/AppInsightsExtension/PartType/AnalyticsLineChartPart",
+                        "settings": {
+                          "content": {
+                            "dashboardPartTitle": "API Latency",
+                            "dashboardPartSubTitle": "Azure Key Vault"
+                          }
+                        },
+                        "asset": {
+                          "idInputName": "ComponentId",
+                          "type": "ApplicationInsights"
+                        }
+                      }
+                    },
+                    "3": {
+                      "position": {
+                        "x": 6,
+                        "y": 4,
+                        "rowSpan": 4,
+                        "colSpan": 6
+                      },
+                      "metadata": {
+                        "inputs": [
+                          {
+                            "name": "ComponentId",
+                            "value": {
+                              "SubscriptionId": "[subscription().subscriptionId]",
+                              "ResourceGroup": "[parameters('logAnalyticsWorkspaceResourceGroup')]",
+                              "Name": "[parameters('logAnalyticsWorkspaceName')]"
+                            }
+                          },
+                          {
+                            "name": "Query",
+                            "value": "AzureDiagnostics\r\n| where ResourceProvider == \"MICROSOFT.KEYVAULT\" and OperationName == \"SecretGet\" and ResultSignature == \"Not Found\"\r\n| summarize count() by bin(TimeGenerated, 1m)\r\n| render timechart\r\n"
+                          },
+                          {
+                            "name": "TimeRange",
+                            "value": "PT1H"
+                          },
+                          {
+                            "name": "Dimensions",
+                            "value": {
+                              "xAxis": {
+                                "name": "TimeGenerated",
+                                "type": "DateTime"
+                              },
+                              "yAxis": [
+                                {
+                                  "name": "count_",
+                                  "type": "Int64"
+                                }
+                              ],
+                              "aggregation": "Sum"
+                            }
+                          },
+                          {
+                            "name": "Version",
+                            "value": "1.0"
+                          },
+                          {
+                            "name": "DashboardId",
+                            "value": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().Name,'/providers/Microsoft.Portal/dashboards/',variables('dashboardID'))]"
+                          },
+                          {
+                            "name": "PartId",
+                            "value": "[concat(uniquestring(variables('dashboardID')), 'Part13')]"
+                          },
+                          {
+                            "name": "PartTitle",
+                            "value": "NotFound SecretGet"
+                          },
+                          {
+                            "name": "PartSubTitle",
+                            "value": "Azure Key Vault"
+                          },
+                          {
+                            "name": "resourceTypeMode",
+                            "value": "workspace"
+                          }
+                        ],
+                        "type": "Extension/AppInsightsExtension/PartType/AnalyticsLineChartPart",
+                        "settings": {
+                          "content": {
+                            "dashboardPartTitle": "NotFound SecretGet",
+                            "dashboardPartSubTitle": "Azure Key Vault"
+                          }
+                        },
+                        "asset": {
+                          "idInputName": "ComponentId",
+                          "type": "ApplicationInsights"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "metadata": {
+                "model": {
+                  "timeRange": {
+                    "value": {
+                      "relative": {
+                        "duration": 4,
+                        "timeUnit": 1
+                      }
+                    },
+                    "type": "MsPortalFx.Composition.Configuration.ValueTypes.TimeRange"
+                  }
+                }
+              }
+            }            
+          }      
+    ]
+  }
